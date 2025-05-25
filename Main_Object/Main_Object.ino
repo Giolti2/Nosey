@@ -93,7 +93,7 @@ void loop() {
       redState = false;
     } else if (input.equalsIgnoreCase("red")) {
       currentColor = "red";
-      lightRing(255, 0, 0);
+      lightRing(255, 0, 0); // changed
       redState = true;
       redStartTime = currentTime;
     } else if (input.equalsIgnoreCase("pat")) {
