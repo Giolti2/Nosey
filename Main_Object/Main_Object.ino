@@ -88,12 +88,12 @@ void loop() {
       }
     } else if (input.equalsIgnoreCase("green")) {
       currentColor = "green";
-      lightRing(255, 110, 200);
+      lightRing(150, 100, 80); // less intensive
       playToneSequence();
       redState = false;
     } else if (input.equalsIgnoreCase("red")) {
       currentColor = "red";
-      lightRing(255, 0, 0); // changed
+      lightRing(40, 0, 0); // spoiled
       redState = true;
       redStartTime = currentTime;
     } else if (input.equalsIgnoreCase("pat")) {

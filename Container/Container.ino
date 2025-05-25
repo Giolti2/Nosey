@@ -25,11 +25,11 @@ uint32_t ledColor;
 
 //colors list
 uint32_t colorList[6] ={
-  strip.Color(150, 100, 80),
+  strip.Color(150, 100, 80), // less 1 led
   strip.Color(200, 121, 150),
-  strip.Color(255, 110, 197),
-  strip.Color(255, 0, 55),
-  strip.Color(40, 0, 0),
+  strip.Color(255, 110, 197), 
+  strip.Color(255, 0, 55), // most intensive
+  strip.Color(40, 0, 0), // spoiled
   strip.Color(255,0,0)
 };
 
