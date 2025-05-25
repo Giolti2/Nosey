@@ -51,13 +51,11 @@ void loop() {
 
     //read from other arduino
     if(msg == "on"){
-      Serial.println("Fridge open");
       isOn = true;
       wasOff = true;
       timer = millis();
     }
     else if(msg == "stop"){
-      Serial.println("Turn off");
       isOn = false;
       wasOn = true;
 
@@ -95,7 +93,7 @@ void loop() {
   if(digitalRead(LID) == LOW){ //closed
     if(lidOpen){
       lidWasOpen = true;
-      Serial.println("Lid closed");
+      Serial.print("lid_close");
     }
     else
       lidWasOpen = false;
@@ -108,7 +106,7 @@ void loop() {
     }
     else{
       lidWasOpen = false;
-      Serial.println("Lid open");
+      Serial.print("lid_open");
     }
 
     lidOpen = true;
@@ -170,7 +168,6 @@ void vibrationRoutine(){
       analogWrite(VIBPIN, 255);
     else{
       analogWrite(VIBPIN, 0);
-      Serial.println("Vibration stop");
       vibrate = false;
     }
   }
@@ -180,7 +177,6 @@ void vibrationRoutine(){
 }
 
 void startLed(){
-  Serial.println("Led on");
   strip.clear();
   for(int i = 0; i < ceil(map(intensity, 0, 3, 1, LEDN)); i++){
    strip.setPixelColor(i, colorList[intensity]);

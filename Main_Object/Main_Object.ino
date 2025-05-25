@@ -45,6 +45,7 @@ bool lastButtonState = HIGH;
 
 void setup() {
   Serial.begin(9600);
+  Serial1.begin(9600);
   ring.begin();
   ring.show();
 
@@ -101,6 +102,41 @@ void loop() {
         noTone(BUZZER_PIN);
         doServo();
       }
+    }
+
+    //propagate to container
+    else if (input.equalsIgnoreCase("on")){ //fridge open
+      Serial1.print("on");
+    }
+    else if (input.equalsIgnoreCase("stop")){
+      Serial1.print("stop");
+    }
+    else if (input.equalsIgnoreCase("0")){
+      Serial1.print("0");
+    }
+    else if (input.equalsIgnoreCase("1")){
+      Serial1.print("1");
+    }
+    else if (input.equalsIgnoreCase("2")){
+      Serial1.print("2");
+    }
+    else if (input.equalsIgnoreCase("3")){
+      Serial1.print("3");
+    }
+    else if (input.equalsIgnoreCase("4")){
+      Serial1.print("4");
+    }
+  }
+
+  if (Serial1.available() > 0){
+    String input = Serial1.readStringUntil('\n');
+    input.trim();
+
+    if (input.equalsIgnoreCase("lid_open")){
+      //do something when the lid is opened
+    }
+    else if (input.equalsIgnoreCase("lid_closed")){
+      //do something when the lid is closed
     }
   }
 
