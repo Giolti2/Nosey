@@ -7,6 +7,8 @@
 #define LEDN 16
 
 #define LID 4
+#define BLINKN 10
+#define SHBLINKN 4
 
 Adafruit_NeoPixel strip(LEDN, LEDPIN, NEO_GRB + NEO_KHZ800);
 
@@ -18,22 +20,31 @@ bool changeLed = false;
 bool lidOpen = false;
 bool lidWasOpen = false;
 
-bool recipe = false;
+bool vibrationDebug = false;
 
-int intensity = 0;
+bool blinking = false;
+bool shortblinking = false;
+
+int intensity = 3;
 uint32_t ledColor;
 
 //colors list
-uint32_t colorList[6] ={
+uint32_t colorList[7] ={
   strip.Color(150, 100, 80), // less 1 led
   strip.Color(200, 121, 150),
   strip.Color(255, 110, 197), 
   strip.Color(255, 0, 55), // most intensive
   strip.Color(40, 0, 0), // spoiled
-  strip.Color(255,0,0)
+  strip.Color(35, 0, 255), //BLINKCOLOR
+  strip.Color(150, 200, 0) //SHBLINKCOLOR
 };
 
-long timer = 0;
+#define BLINKCOLOR 5
+#define SHBLINKCOLOR 6
+
+long vibTimer = 0;
+long blinkTimer = 0;
+int blinkTimes = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -42,6 +53,9 @@ void setup() {
   strip.show(); // Initialize all pixels to 'off'
 
   pinMode(LID, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  vibTimer = millis();
 }
 
 void loop() {
@@ -53,13 +67,25 @@ void loop() {
     if(msg == "on"){
       isOn = true;
       wasOff = true;
-      timer = millis();
+      vibTimer = millis();
     }
     else if(msg == "stop"){
       isOn = false;
       wasOn = true;
 
       vibrate = false;
+    }
+    else if(msg == "recipe"){
+      blinking = true;
+      shortblinking = false;
+      blinkTimes = 0;
+      blinkTimer = millis();
+    }
+    else if (msg == "tag"){
+      shortblinking = true;
+      blinking = false;
+      blinkTimes = 0;
+      blinkTimer = millis();
     }
 
     //intensity flag
@@ -90,7 +116,8 @@ void loop() {
   }
 
   //lid status
-  if(digitalRead(LID) == LOW){ //closed
+  if(digitalRead(LID) == LOW){
+    digitalWrite(LED_BUILTIN, LOW); //closed
     if(lidOpen){
       lidWasOpen = true;
       Serial.print("lid_close");
@@ -99,8 +126,11 @@ void loop() {
       lidWasOpen = false;
 
     lidOpen = false;
+
+    vibrate = true;
   }
   else{ //open
+    digitalWrite(LED_BUILTIN, HIGH);
     if(lidOpen){
       lidWasOpen = true;
     }
@@ -127,6 +157,8 @@ void loop() {
       startLed();
     }
 
+    blinkRoutine();
+
     vibrationRoutine();
   }
   else if(wasOn){
@@ -140,7 +172,7 @@ void loop() {
 void startVibration(){
   if(intensity == 3){
     vibrate = true;
-    timer = millis();
+    vibTimer = millis();
   }
   return;
 }
@@ -151,28 +183,80 @@ void stopVibration(){
 }
 
 void vibrationRoutine(){
-  if(vibrate){
-    if((millis() - timer) < 3000)
+  if(vibrate && !blinking && !vibrationDebug){
+    if((millis() - vibTimer) < 3000)
     analogWrite(VIBPIN, 255);
-    else if((millis() - timer) < 3500)
+    else if((millis() - vibTimer) < 3500)
       analogWrite(VIBPIN, 0);
-    else if((millis() - timer) < 6500)
+    else if((millis() - vibTimer) < 6500)
       analogWrite(VIBPIN, 255);
-    else if((millis() - timer) < 7000)
+    else if((millis() - vibTimer) < 7000)
       analogWrite(VIBPIN, 0);
-    else if((millis() - timer) < 10000)
+    else if((millis() - vibTimer) < 10000)
       analogWrite(VIBPIN, 255);
-    else if((millis() - timer) < 10500)
+    else if((millis() - vibTimer) < 10500)
       analogWrite(VIBPIN, 0);
-    else if((millis() - timer) < 13500)
+    else if((millis() - vibTimer) < 13500)
       analogWrite(VIBPIN, 255);
     else{
       analogWrite(VIBPIN, 0);
       vibrate = false;
     }
   }
+  else if(vibrate && vibrationDebug){
+    analogWrite(VIBPIN, 255);
+  }
   else {
     analogWrite(VIBPIN, 0);
+  }
+}
+
+void blinkRoutine(){
+  if(blinking){
+    if(blinkTimes < BLINKN){
+      if((millis() - blinkTimer) < 500){
+        for(int i = 0; i < LEDN; i++){
+          strip.setPixelColor(i, colorList[BLINKCOLOR]);
+        }
+        strip.show();
+      }
+      else if((millis() - blinkTimer) < 1000){
+        strip.clear();
+        strip.show();
+      }
+      else{
+        blinkTimes++;
+        blinkTimer = millis();
+      }
+    }
+    else{
+      blinking = false;
+      changeLed = true;
+      blinkTimes = 0;
+    }
+  }
+  else if(shortblinking){
+    if(blinkTimes < SHBLINKN){
+      if((millis() - blinkTimer) < 500){
+        for(int i = 0; i < LEDN; i++){
+          strip.setPixelColor(i, colorList[SHBLINKCOLOR]);
+        }
+        strip.show();
+      }
+      else if((millis() - blinkTimer) < 1000){
+        strip.clear();
+        strip.show();
+      }
+      else{
+        blinkTimes++;
+        blinkTimer = millis();
+      }
+    }
+    else{
+      shortblinking = false;
+      changeLed = true;
+      blinkTimes = 0;
+    }
   }
 }
 
